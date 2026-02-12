@@ -1,0 +1,4 @@
+edge-tts>=7.2.7
+pydub>=0.25.1
+audioop-lts>=0.2.2
+pygame>=2.6.1
