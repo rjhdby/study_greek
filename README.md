@@ -2,6 +2,8 @@
 
 A project for learning Greek numbers by ear. Includes a game for training number perception and tools for generating audio files.
 
+> 📖 **New to development?** See the [Beginner's Installation Guide for macOS](README_INSTALL_EN.md)
+
 ## Deployment
 
 ### Requirements
