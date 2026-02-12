@@ -2,6 +2,8 @@
 
 This is a step-by-step guide for those who are not familiar with software development. Follow the instructions in order.
 
+> 💡 **Tip:** If you encounter any strange errors at any step — just copy the error message into ChatGPT and follow its instructions.
+
 ---
 
 ## Step 1: Open Terminal
