@@ -1,15 +1,15 @@
 # Greek Numbers Audio Trainer
 
-Проект для изучения греческих чисел на слух. Включает игру для тренировки восприятия чисел и инструменты для генерации аудиофайлов.
+A project for learning Greek numbers by ear. Includes a game for training number perception and tools for generating audio files.
 
-## Развёртывание
+## Deployment
 
-### Требования
+### Requirements
 
 - Python 3.10+
-- ffmpeg (для воспроизведения и обработки аудио)
+- ffmpeg (for audio playback and processing)
 
-### Установка ffmpeg
+### Installing ffmpeg
 
 **macOS:**
 ```bash
@@ -21,7 +21,7 @@ brew install ffmpeg
 sudo apt install ffmpeg
 ```
 
-### Установка зависимостей Python
+### Installing Python Dependencies
 
 ```bash
 python3 -m venv .venv
@@ -29,75 +29,115 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Скрипты
+## Scripts
 
-### 1. number_game.py — Игра «Угадай число»
+### 1. number_game.py — "Guess the Number" Game
 
-Интерактивная игра для тренировки восприятия греческих чисел на слух. Программа воспроизводит случайное число от 1 до 1999, а пользователь должен его угадать.
+An interactive game for training Greek number perception by ear. The program plays a random number from the specified range, and the user must guess it.
 
-**Запуск:**
+**Run:**
 ```bash
 python3 number_game.py
 ```
 
-или через shell-скрипт:
+or via shell script:
 ```bash
 ./numbers.sh
 ```
 
-**Управление:**
-- Вводите число сразу во время воспроизведения — ввод будет подставлен в строку
-- `r` или `repeat` — повторить воспроизведение
-- `s` или `show` — показать ответ и перейти к следующему числу
-- `q` или `quit` — выйти из игры
+**Options:**
+- `--lang` — interface language: `en` (default), `ru`
+- `--voice` — voice gender for audio: `female` (default), `male`
+- `--min` — minimum number value (default: 0, range: 0-1999)
+- `--max` — maximum number value (default: 1999, range: 0-1999)
 
-**Особенности:**
-- Параллельный ввод во время воспроизведения аудио
-- Выделение неправильных цифр красным цветом
-- Статистика по окончанию: всего загадано, угадано с первой попытки, топ-5 ошибок по позициям
+**Examples:**
+```bash
+# English interface, female voice (default), full range 0-1999
+python3 number_game.py
+
+# Russian interface, male voice
+python3 number_game.py --lang ru --voice male
+
+# Practice only numbers 1-100
+python3 number_game.py --min 1 --max 100
+
+# Practice numbers 500-1000
+python3 number_game.py --min 500 --max 1000
+
+# Via shell script (all parameters are named)
+./numbers.sh --lang en --voice female
+./numbers.sh --lang ru --voice male
+./numbers.sh --min 1 --max 100
+./numbers.sh --lang ru --voice male --min 500 --max 1000
+```
+
+**Controls:**
+- Type the number while audio is playing — input will be pre-filled in the prompt
+- `r` or `repeat` — replay the audio
+- `s` or `show` — show the answer and move to the next number
+- `q` or `quit` — exit the game
+
+**Features:**
+- Parallel input during audio playback
+- Incorrect digits highlighted in red
+- End-of-game statistics: total numbers, first-try correct guesses, top 5 position errors
+- Localized interface (Russian, English)
 
 ---
 
-### 2. make_dataset.py — Генерация аудиофайлов
+### 2. make_dataset.py — Audio File Generation
 
-Генерирует аудиофайлы для слов/чисел из текстового файла с помощью edge-tts (греческий голос el-GR-NestorasNeural). Автоматически обрезает тишину в конце.
+Generates audio files for words/numbers from a new line delimited text file using edge-tts. Supports male and female Greek voices. Automatically trims trailing silence.
 
-**Запуск:**
+**Voices:**
+- `male` — el-GR-NestorasNeural (default)
+- `female` — el-GR-AthinaNeural
+
+**Run:**
 ```bash
 python3 make_dataset.py dataset.txt
 ```
 
-**Параметры:**
-- `input_file` — путь к файлу со словами/числами (по одному на строку)
-- `-o, --output` — директория для сохранения (по умолчанию: `./audio`)
+**Parameters:**
+- `input_file` — path to file with words/numbers (one per line)
+- `-o, --output` — output directory (default: `./audio`)
+- `-g, --gender` — voice gender: `male` (default), `female`, or `all` (both)
 
-**Пример:**
+**Examples:**
 ```bash
-python3 make_dataset.py dataset.txt -o ./audio
+# Generate with male voice (default)
+python3 make_dataset.py dataset.txt
+
+# Generate with female voice
+python3 make_dataset.py dataset.txt -g female
+
+# Generate both male and female voices
+python3 make_dataset.py dataset.txt -g all
 ```
 
-**Результат:**
-- Обрезанные файлы сохраняются в `./audio/`
-- Сырые (необрезанные) файлы сохраняются в `./audio/raw/`
+**Result:**
+- Trimmed files are saved to `./audio/{gender}/` (e.g., `./audio/male/`, `./audio/female/`)
+- Raw (untrimmed) files are saved to `./audio/raw/{gender}/`
 
 ---
 
-### 3. trim_silence.py — Обрезка тишины в аудио
+### 3. trim_silence.py — Audio Silence Trimming
 
-Утилита для обрезки тишины в конце аудиофайла с использованием ffmpeg.
+A utility for trimming trailing silence in audio files using ffmpeg.
 
-**Запуск:**
+**Run:**
 ```bash
 python3 trim_silence.py input.mp3 output.mp3
 ```
 
-**Параметры:**
-- `input` — входной MP3 файл
-- `output` — выходной MP3 файл
-- `-t, --threshold` — порог тишины в децибелах (по умолчанию: -40)
-- `--tail` — максимальный хвост тишины в миллисекундах (по умолчанию: 500)
+**Parameters:**
+- `input` — input MP3 file
+- `output` — output MP3 file
+- `-t, --threshold` — silence threshold in decibels (default: -40)
+- `--tail` — maximum silence tail in milliseconds (default: 500)
 
-**Пример:**
+**Example:**
 ```bash
 python3 trim_silence.py audio/raw/100.mp3 audio/100.mp3 --tail 20
 ```

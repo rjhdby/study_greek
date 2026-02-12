@@ -1,23 +1,23 @@
-# Модуль локализации
+# Localization module
 
 import os
 from locales import ru, en
 
-# Доступные языки
+# Available languages
 LANGUAGES = {
     'ru': ru.MESSAGES,
     'en': en.MESSAGES,
 }
 
-# Язык по умолчанию
+# Default language
 DEFAULT_LANGUAGE = 'ru'
 
-# Текущий язык
+# Current language
 _current_language = DEFAULT_LANGUAGE
 
 
 def set_language(lang: str) -> bool:
-    """Устанавливает текущий язык. Возвращает True при успехе."""
+    """Sets the current language. Returns True on success."""
     global _current_language
     if lang in LANGUAGES:
         _current_language = lang
@@ -26,19 +26,19 @@ def set_language(lang: str) -> bool:
 
 
 def get_language() -> str:
-    """Возвращает текущий язык."""
+    """Returns the current language."""
     return _current_language
 
 
 def get_available_languages() -> list:
-    """Возвращает список доступных языков."""
+    """Returns a list of available languages."""
     return list(LANGUAGES.keys())
 
 
 def t(key: str, **kwargs) -> str:
     """
-    Возвращает локализованную строку по ключу.
-    Поддерживает форматирование через kwargs.
+    Returns a localized string by key.
+    Supports formatting via kwargs.
     """
     messages = LANGUAGES.get(_current_language, LANGUAGES[DEFAULT_LANGUAGE])
     text = messages.get(key, key)

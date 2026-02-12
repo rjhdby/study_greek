@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Скрипт для обрезки тишины в конце аудиофайла.
+Script for trimming silence at the end of an audio file.
 """
 
 import argparse
@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 def get_audio_duration(file_path: str) -> float:
-    """Получает длительность аудиофайла в миллисекундах."""
+    """Gets the duration of an audio file in milliseconds."""
     result = subprocess.run(
         [
             "ffprobe", "-v", "quiet", "-print_format", "json",
@@ -24,8 +24,8 @@ def get_audio_duration(file_path: str) -> float:
 
 def detect_silence_end(file_path: str, threshold: int) -> float | None:
     """
-    Находит начало последнего участка тишины в конце файла.
-    Возвращает время в миллисекундах или None, если тишина не найдена.
+    Finds the start of the last silence segment at the end of the file.
+    Returns time in milliseconds or None if no silence is found.
     """
     result = subprocess.run(
         [
@@ -36,7 +36,7 @@ def detect_silence_end(file_path: str, threshold: int) -> float | None:
         capture_output=True, text=True
     )
     
-    # Парсим вывод ffmpeg для поиска silence_start
+    # Parse ffmpeg output to find silence_start
     lines = result.stderr.split('\n')
     silence_starts = []
     
@@ -44,17 +44,17 @@ def detect_silence_end(file_path: str, threshold: int) -> float | None:
         if "silence_start:" in line:
             try:
                 start_str = line.split("silence_start:")[1].split()[0]
-                silence_starts.append(float(start_str) * 1000)  # в миллисекунды
+                silence_starts.append(float(start_str) * 1000)  # to milliseconds
             except (IndexError, ValueError):
                 continue
     
     if silence_starts:
-        return silence_starts[-1]  # Последний участок тишины
+        return silence_starts[-1]  # Last silence segment
     return None
 
 
 def trim_audio(input_path: str, output_path: str, end_ms: float) -> None:
-    """Обрезает аудио до указанной точки."""
+    """Trims audio to the specified point."""
     end_seconds = end_ms / 1000
     subprocess.run(
         [
@@ -69,71 +69,71 @@ def trim_audio(input_path: str, output_path: str, end_ms: float) -> None:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Обрезка тишины в конце аудиофайла"
+        description="Trim silence at the end of an audio file"
     )
     parser.add_argument(
         "input",
         type=Path,
-        help="Входной MP3 файл"
+        help="Input MP3 file"
     )
     parser.add_argument(
         "output",
         type=Path,
-        help="Выходной MP3 файл"
+        help="Output MP3 file"
     )
     parser.add_argument(
         "-t", "--threshold",
         type=int,
         default=-40,
-        help="Порог тишины в децибелах (по умолчанию: -40)"
+        help="Silence threshold in decibels (default: -40)"
     )
     parser.add_argument(
         "--tail",
         type=int,
         default=500,
-        help="Максимальный хвост тишины в миллисекундах (по умолчанию: 500)"
+        help="Maximum silence tail in milliseconds (default: 500)"
     )
     
     args = parser.parse_args()
     
     if not args.input.exists():
-        print(f"Ошибка: файл '{args.input}' не найден")
+        print(f"Error: file '{args.input}' not found")
         return 1
     
     input_path = str(args.input)
     output_path = str(args.output)
     
-    # Получаем длительность аудио
+    # Get audio duration
     duration = get_audio_duration(input_path)
-    print(f"Длительность: {duration:.0f} мс")
+    print(f"Duration: {duration:.0f} ms")
     
-    # Находим начало тишины в конце
+    # Find the start of silence at the end
     silence_start = detect_silence_end(input_path, args.threshold)
     
     if silence_start is None:
-        print("Тишина в конце не обнаружена, копируем файл без изменений")
+        print("No silence detected at the end, copying file without changes")
         subprocess.run(["cp", input_path, output_path])
         return 0
     
-    print(f"Начало тишины: {silence_start:.0f} мс")
+    print(f"Silence start: {silence_start:.0f} ms")
     
     silence_duration = duration - silence_start
-    print(f"Длительность тишины: {silence_duration:.0f} мс")
+    print(f"Silence duration: {silence_duration:.0f} ms")
     
     if silence_duration <= args.tail:
-        print(f"Тишина ({silence_duration:.0f} мс) не превышает tail ({args.tail} мс), копируем без изменений")
+        print(f"Silence ({silence_duration:.0f} ms) does not exceed tail ({args.tail} ms), copying without changes")
         subprocess.run(["cp", input_path, output_path])
         return 0
     
-    # Обрезаем до silence_start + tail
+    # Trim to silence_start + tail
     trim_point = silence_start + args.tail
-    print(f"Обрезаем до: {trim_point:.0f} мс")
+    print(f"Trimming to: {trim_point:.0f} ms")
     
     trim_audio(input_path, output_path, trim_point)
     
     new_duration = get_audio_duration(output_path)
-    print(f"Новая длительность: {new_duration:.0f} мс")
-    print(f"✓ Сохранено: {output_path}")
+    print(f"New duration: {new_duration:.0f} ms")
+    print(f"✓ Saved: {output_path}")
     
     return 0
 
